@@ -33,7 +33,7 @@ jobs:
     - name: Moving the build to the backend
       run: |
         cd ./frontend
-        mv ./dist/com.heatpeakstudio.frontend/browser ../backend/src/main/resources/static
+        mv ./dist/com.jugglehive.frontend/browser ../backend/src/main/resources/static
 
     - name: Set up JDK 17
       uses: actions/setup-java@v1
