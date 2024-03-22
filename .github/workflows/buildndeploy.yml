@@ -138,6 +138,7 @@ jobs:
                 sudo docker compose up -d
                 sleep 10
                 cd /root/database
+                sudo docker exec -i postgres psql -U postgres -c "CREATE DATABASE nextcloud;" -d postgres
                 sudo docker cp ttrpg_postgres.sql postgres:/var/lib/postgresql/
                 sudo docker exec -i postgres psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d postgres
                 sudo docker exec -i postgres psql -U postgres -d postgres -f /var/lib/postgresql/ttrpg_postgres.sql
