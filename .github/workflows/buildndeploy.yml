@@ -105,42 +105,40 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               script: |
-                sudo su
-                source /etc/environment
                 sudo sed -i '/^CERTBOT_EMAIL=/d' /etc/environment
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
-                source /etc/environment
+                for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
                 if [ ! -d "/root/data" ]; then
-                  mkdir /root/data
+                  sudo mkdir /root/data
                 fi
                 if [ ! -d "/root/data/certbot" ]; then
-                  docker stop $(docker ps -a -q)
-                  docker container prune -f
-                  docker rmi $(docker images -a -q)
-                  docker network prune -f
+                  sudo docker stop $(sudo docker ps -a -q)
+                  sudo docker container prune -f
+                  sudo docker rmi $(sudo docker images -a -q)
+                  sudo docker network prune -f
                   sudo kill -9 $(sudo lsof -t -i :443)
-                  systemctl stop docker
-                  systemctl start docker.service
+                  sudo systemctl stop docker
+                  sudo systemctl start docker.service
                   cd /root/docker/kickstart
-                  docker compose up -d
+                  sudo docker compose up -d
                   sleep 60
-                  docker compose down
+                  sudo docker compose down
                 fi
-                rm -rf /root/docker/kickstart
-                docker stop $(docker ps -a -q)
-                docker container prune -f
-                docker rmi ghcr.io/jugglehive/webapp
-                docker network prune -f
+                sudo rm -rf /root/docker/kickstart
+                sudo docker stop $(sudo docker ps -a -q)
+                sudo docker container prune -f
+                sudo docker rmi ghcr.io/jugglehive/webapp
+                sudo docker network prune -f
                 sudo kill -9 $(sudo lsof -t -i :443)
-                systemctl stop docker
-                systemctl start docker.service
-                for url in $(cat ~/.docker/config.json | jq -r '.auths | keys | .[]'); do docker logout $url; done
-                echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+                sudo systemctl stop docker
+                sudo systemctl start docker.service
+                for url in $(sudo cat ~/.docker/config.json | jq -r '.auths | keys | .[]'); do sudo docker logout $url; done
+                echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u $ --password-stdin
                 cd /root/docker
-                docker compose up -d
+                sudo docker compose up -d
                 sleep 10
                 cd /root/database
-                docker cp ttrpg_postgres.sql postgres:/var/lib/postgresql/
-                docker exec -i postgres psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d postgres
-                docker exec -i postgres psql -U postgres -d postgres -f /var/lib/postgresql/ttrpg_postgres.sql
-                rm -rf /root/database
+                sudo docker cp ttrpg_postgres.sql postgres:/var/lib/postgresql/
+                sudo docker exec -i postgres psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d postgres
+                sudo docker exec -i postgres psql -U postgres -d postgres -f /var/lib/postgresql/ttrpg_postgres.sql
+                sudo rm -rf /root/database
