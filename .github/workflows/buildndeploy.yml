@@ -97,7 +97,7 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               source: "./database"
-              target: "/root/docker"
+              target: "/root"
       
           - name: Actual deploy
             uses: appleboy/ssh-action@master
@@ -106,7 +106,6 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               script: |
-                mv /root/docker/database /root/docker/schema
                 source /etc/environment
                 sudo sed -i '/^CERTBOT_EMAIL=/d' /etc/environment
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
@@ -130,7 +129,7 @@ jobs:
                 rm -rf /root/docker/kickstart
                 docker stop $(docker ps -a -q)
                 docker container prune -f
-                docker rmi $(docker images -a -q)
+                docker rmi ghcr.io/jugglehive/webapp
                 docker network prune -f
                 sudo kill -9 $(sudo lsof -t -i :443)
                 systemctl stop docker
@@ -140,7 +139,8 @@ jobs:
                 cd /root/docker
                 docker compose up -d
                 sleep 10
-                cd /root/docker/schema/
-                docker cp ttrpg_postgres.sql pgdb:/var/lib/postgresql/
-                docker exec -i pgdb psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d postgres
-                docker exec -i pgdb psql -U postgres -d postgres -f /var/lib/postgresql/ttrpg_postgres.sql
+                cd /root/database
+                docker cp ttrpg_postgres.sql postgres:/var/lib/postgresql/
+                docker exec -i postgres psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d postgres
+                docker exec -i postgres psql -U postgres -d postgres -f /var/lib/postgresql/ttrpg_postgres.sql
+                rm -rf /root/database
