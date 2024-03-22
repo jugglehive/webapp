@@ -96,8 +96,8 @@ jobs:
               host: ${{ secrets.SERVER_HOST }}
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
-              source: "./database/*"
-              target: "/root/docker/schema"
+              source: "./database"
+              target: "/root/docker"
       
           - name: Actual deploy
             uses: appleboy/ssh-action@master
@@ -106,14 +106,15 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               script: |
+                mv /root/docker/database /root/docker/schema
                 source /etc/environment
                 sudo sed -i '/^CERTBOT_EMAIL=/d' /etc/environment
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
                 source /etc/environment
-                if [ ! -d "/root/docker" ]; then
-                  mkdir /root/docker
+                if [ ! -d "/root/data" ]; then
+                  mkdir /root/data
                 fi
-                if [ ! -d "/root/docker/certbot" ]; then
+                if [ ! -d "/root/data/certbot" ]; then
                   docker stop $(docker ps -a -q)
                   docker container prune -f
                   docker rmi $(docker images -a -q)
