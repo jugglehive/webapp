@@ -56,7 +56,7 @@ services:
       - OVERWRITECLIURL=http://cloud.jugglegames.com
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=nextcloud
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
     depends_on:
       - postgres

@@ -105,8 +105,11 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               script: |
-                sudo sed -i '/^CERTBOT_EMAIL=/d' /etc/environment
-                echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
+                secrets_array=("CERTBOT_EMAIL" "POSTGRES_USER" "POSTGRES_PASSWORD")
+                for secret in "${secrets_array[@]}"; do
+                  sudo sed -i "/^${secret}=/d" /etc/environment
+                  echo "${secret}=${{ secrets.${secret} }}" | sudo tee -a /etc/environment
+                done
                 for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
                 if [ ! -d "/root/data" ]; then
                   sudo mkdir /root/data
