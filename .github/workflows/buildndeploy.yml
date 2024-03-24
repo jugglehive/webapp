@@ -108,7 +108,20 @@ jobs:
                 secrets_array=("CERTBOT_EMAIL" "POSTGRES_USER" "POSTGRES_PASSWORD")
                 for secret in "${secrets_array[@]}"; do
                   sudo sed -i "/^${secret}=/d" /etc/environment
-                  echo "${secret}=${{ secrets[$secret] }}" | sudo tee -a /etc/environment
+                  case "${secret}" in
+                    "CERTBOT_EMAIL")
+                      echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
+                      ;;
+                    "POSTGRES_USER")
+                      echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" | sudo tee -a /etc/environment
+                      ;;
+                    "POSTGRES_PASSWORD")
+                      echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" | sudo tee -a /etc/environment
+                      ;;
+                    *)
+                      echo "Unknown secret: ${secret}"
+                      ;;
+                  esac
                 done
                 for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
                 if [ ! -d "/root/data" ]; then
