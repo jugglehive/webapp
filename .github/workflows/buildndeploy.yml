@@ -108,7 +108,7 @@ jobs:
                 secrets_array=("CERTBOT_EMAIL" "POSTGRES_USER" "POSTGRES_PASSWORD")
                 for secret in "${secrets_array[@]}"; do
                   sudo sed -i "/^${secret}=/d" /etc/environment
-                  echo "${secret}=${{ secrets.${secret} }}" | sudo tee -a /etc/environment
+                  echo "${secret}=${{ secrets[$secret] }}" | sudo tee -a /etc/environment
                 done
                 for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
                 if [ ! -d "/root/data" ]; then
