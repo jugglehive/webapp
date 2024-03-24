@@ -41,6 +41,8 @@ services:
     container_name: app
     image: ghcr.io/jugglehive/webapp:latest
     restart: always
+    environment:
+      - DOMAIN=$DOMAIN
     depends_on:
       - postgres
 

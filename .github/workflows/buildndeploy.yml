@@ -118,6 +118,9 @@ jobs:
                     "POSTGRES_PASSWORD")
                       echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" | sudo tee -a /etc/environment
                       ;;
+                    "DOMAIN")
+                      echo "DOMAIN=${{ secrets.DOMAIN }}" | sudo tee -a /etc/environment
+                      ;;
                     *)
                       echo "Unknown secret: ${secret}"
                       ;;
