@@ -127,7 +127,8 @@ jobs:
                   esac
                 done
                 for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
-                sed -i "s/\$DOMAIN/$DOMAIN/g" nginx.conf
+                sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/web/nginx.conf
+                sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
                 if [ ! -d "/root/data" ]; then
                   sudo mkdir /root/data
                 fi

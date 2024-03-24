@@ -56,6 +56,8 @@ services:
     environment:
       - OVERWRITEHOST=cloud.$DOMAIN
       - OVERWRITECLIURL=http://cloud.$DOMAIN
+      - OVERWRITEPROTOCOL=https
+      - VIRTUAL_HOST=cloud.$DOMAIN
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=nextcloud
       - POSTGRES_USER=$POSTGRES_USER
