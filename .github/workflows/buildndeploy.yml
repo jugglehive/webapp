@@ -105,7 +105,7 @@ jobs:
               username: ${{ secrets.SERVER_USERNAME }}
               password: ${{ secrets.SERVER_PASSWORD }}
               script: |
-                secrets_array=("CERTBOT_EMAIL" "POSTGRES_USER" "POSTGRES_PASSWORD")
+                secrets_array=("CERTBOT_EMAIL" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN")
                 for secret in "${secrets_array[@]}"; do
                   sudo sed -i "/^${secret}=/d" /etc/environment
                   case "${secret}" in
