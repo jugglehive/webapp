@@ -166,6 +166,8 @@ jobs:
                 sleep 10
                 cd /root/database
                 sudo docker cp ttrpg_postgres.sql postgres:/var/lib/postgresql/
-                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USERNAME }} -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d ${{ secrets.POSTGRES_DATABASE }}
-                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USERNAME }} -d ${{ secrets.POSTGRES_DATABASE }} -f /var/lib/postgresql/ttrpg_postgres.sql
+                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USER }} -c "CREATE DATABASE ${{ secrets.POSTGRES_DATABASE }};" -d ${{ secrets.POSTGRES_USER }}
+                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USER }} -c "CREATE DATABASE ${{ secrets.POSTGRES_DATABASE_2 }};" -d ${{ secrets.POSTGRES_USER }}
+                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USER }} -c "CREATE SCHEMA IF NOT EXISTS ttrpg;" -d ${{ secrets.POSTGRES_DATABASE }}
+                sudo docker exec -i postgres psql -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DATABASE }} -f /var/lib/postgresql/ttrpg_postgres.sql
                 sudo rm -rf /root/database
