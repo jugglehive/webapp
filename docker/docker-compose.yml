@@ -35,6 +35,7 @@ services:
       - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
     volumes:
       - ../data/postgres:/var/lib/postgresql/data
+    command: postgres --name $POSTGRES_DATABASE --name $POSTGRES_DATABASE_2
 
   #Webapp service
   app:
@@ -43,6 +44,9 @@ services:
     restart: always
     environment:
       - DOMAIN=$DOMAIN
+      - POSTGRES_DATABASE=$POSTGRES_DATABASE
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
     depends_on:
       - postgres
 
@@ -61,7 +65,7 @@ services:
       - OVERWRITEPROTOCOL=https
       - VIRTUAL_HOST=cloud.$DOMAIN
       - POSTGRES_HOST=postgres
-      - POSTGRES_DB=nextcloud
+      - POSTGRES_DB=$POSTGRES_DATABASE_2
       - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
     depends_on:
