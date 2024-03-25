@@ -58,7 +58,7 @@ jobs:
         owner-type: org # or user
         token: ${{ secrets.PAT_TOKEN }}
         repository_owner: ${{ github.repository_owner }}
-        delete-untagged: true
+        delete-untagged: false
         keep-at-most: 0
       
     - name: Build and push
