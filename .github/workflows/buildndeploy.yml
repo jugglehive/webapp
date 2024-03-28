@@ -99,7 +99,7 @@ jobs:
           sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN" "IMG_NAME")
           for secret in "${secrets_array[@]}"; do
-            sudo sed -i "/^${secret}=/d" /etc/environment || true
+            sudo sed -i "/^${secret}=/d" /etc/environment 2>/dev/null || true
             case "${secret}" in
               "CERTBOT_EMAIL")
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
@@ -194,7 +194,7 @@ jobs:
           sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
-            sudo sed -i "/^${secret}=/d" /etc/environment || true
+            sudo sed -i "/^${secret}=/d" /etc/environment 2>/dev/null || true
             case "${secret}" in
               "CERTBOT_EMAIL")
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
