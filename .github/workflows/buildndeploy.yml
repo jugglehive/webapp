@@ -86,7 +86,7 @@ jobs:
         host: ${{ secrets.DOMAIN }}
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
-        source: "./docker/main/*"
+        source: "./docker"
         target: "/root"
 
     - name: Actual deploy
@@ -96,7 +96,7 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          touch /etc/environment
+          sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment
@@ -125,7 +125,8 @@ jobs:
             esac
           done
           for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
-          sudo mv -f /root/main /root/docker
+          sudo mv -f /root/docker/main/* /root/docker
+          sudo rm -rf /root/docker/main
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
           if [ ! -d "/root/data" ]; then
