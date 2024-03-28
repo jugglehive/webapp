@@ -97,7 +97,7 @@ jobs:
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
           sudo touch /etc/environment
-          secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN")
+          secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN" "IMG_NAME")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment
             case "${secret}" in
@@ -119,6 +119,9 @@ jobs:
               "DOMAIN")
                 echo "DOMAIN=${{ secrets.DOMAIN }}" | sudo tee -a /etc/environment
                 ;;
+              "IMG_NAME")
+                echo "IMG_NAME=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}" | sudo tee -a /etc/environment
+                ;;
               *)
                 echo "Unknown secret: ${secret}"
                 ;;
@@ -127,6 +130,7 @@ jobs:
           for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
           sudo mv -f /root/docker/main/* /root/docker
           sudo rm -rf /root/docker/main
+          sudo rm -rf /root/docker/cloud
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
           if [ ! -d "/root/data" ]; then
@@ -148,7 +152,7 @@ jobs:
           sudo rm -rf /root/docker/kickstart
           sudo docker stop $(sudo docker ps -a -q)
           sudo docker container prune -f
-          sudo docker rmi ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+          sudo docker rmi $IMG_NAME
           sudo docker network prune -f
           sudo kill -9 $(sudo lsof -t -i :443)
           sudo systemctl stop docker
@@ -182,7 +186,7 @@ jobs:
         host: cloud.${{ secrets.DOMAIN }}
         username: ${{ secrets.CLOUD_USERNAME }}
         password: ${{ secrets.CLOUD_PASSWORD }}
-        source: "./docker/cloud"
+        source: "./docker"
         target: "/root"
 
     - name: Actual deploy
@@ -192,7 +196,7 @@ jobs:
         username: ${{ secrets.CLOUD_USERNAME }}
         password: ${{ secrets.CLOUD_PASSWORD }}
         script: |
-          touch /etc/environment
+          sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment
@@ -221,7 +225,9 @@ jobs:
             esac
           done
           for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
-          sudo mv -f /root/cloud /root/docker
+          sudo mv -f /root/docker/cloud/* /root/docker
+          sudo rm -rf /root/docker/cloud
+          sudo rm -rf /root/docker/main
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
           if [ ! -d "/root/data" ]; then

@@ -25,7 +25,7 @@ services:
   #Webapp service
   app:
     container_name: app
-    image: ghcr.io/jugglehive/webapp:latest
+    image: $IMG_NAME:latest
     restart: always
     environment:
       - DOMAIN=$DOMAIN
