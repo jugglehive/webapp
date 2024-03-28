@@ -192,7 +192,7 @@ jobs:
         password: ${{ secrets.CLOUD_PASSWORD }}
         script: |
           sudo touch /etc/environment
-          secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "DOMAIN")
+          secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "NEXTCLOUD_ADMIN_USER" "NEXTCLOUD_ADMIN_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment || true
             case "${secret}" in
@@ -210,6 +210,12 @@ jobs:
                 ;;
               "MYSQL_PASSWORD")
                 echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" | sudo tee -a /etc/environment
+                ;;
+              "NEXTCLOUD_ADMIN_USER")
+                echo "NEXTCLOUD_ADMIN_USER=${{ secrets.NEXTCLOUD_ADMIN_USER }}" | sudo tee -a /etc/environment
+                ;;
+              "NEXTCLOUD_ADMIN_PASSWORD")
+                echo "NEXTCLOUD_ADMIN_PASSWORD=${{ secrets.NEXTCLOUD_ADMIN_PASSWORD }}" | sudo tee -a /etc/environment
                 ;;
               "DOMAIN")
                 echo "DOMAIN=${{ secrets.DOMAIN }}" | sudo tee -a /etc/environment
