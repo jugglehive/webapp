@@ -131,7 +131,7 @@ jobs:
           sudo mv -f /root/docker/main/* /root/docker
           sudo rm -rf /root/docker/main
           sudo rm -rf /root/docker/cloud
-          sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
+          sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/web/nginx.conf
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
           if [ ! -d "/root/data" ]; then
             sudo mkdir /root/data
