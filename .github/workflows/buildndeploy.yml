@@ -86,7 +86,7 @@ jobs:
         host: ${{ secrets.DOMAIN }}
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
-        source: "./docker/main"
+        source: "./docker/main/*"
         target: "/root"
 
     - name: Actual deploy
@@ -96,6 +96,7 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
+          touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment
@@ -190,6 +191,7 @@ jobs:
         username: ${{ secrets.CLOUD_USERNAME }}
         password: ${{ secrets.CLOUD_PASSWORD }}
         script: |
+          touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
             sudo sed -i "/^${secret}=/d" /etc/environment
