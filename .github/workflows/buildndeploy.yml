@@ -136,27 +136,22 @@ jobs:
           if [ ! -d "/root/data" ]; then
             sudo mkdir /root/data
           fi
-          if [ ! -d "/root/data/certbot" ]; then
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker container prune -f
-            sudo docker rmi $(sudo docker images -a -q)
-            sudo docker network prune -f
-            sudo kill -9 $(sudo lsof -t -i :443)
-            sudo systemctl stop docker
-            sudo systemctl start docker.service
-            cd /root/docker/kickstart
-            sudo docker compose up -d
-            sleep 60
-            sudo docker compose down
-          fi
-          sudo rm -rf /root/docker/kickstart
           sudo docker stop $(sudo docker ps -a -q)
           sudo docker container prune -f
           sudo docker rmi $IMG_NAME
           sudo docker network prune -f
           sudo kill -9 $(sudo lsof -t -i :443)
+          sudo kill -9 $(sudo lsof -t -i :80)
           sudo systemctl stop docker
           sudo systemctl start docker.service
+          if [ ! -d "/root/data/certbot" ]; then
+            cd /root/docker/kickstart
+            sudo docker compose up -d
+            sleep 60
+            sudo docker compose down
+            sudo docker stop $(sudo docker ps -a -q)
+            sudo docker container prune -f
+          fi
           for url in $(sudo cat ~/.docker/config.json | jq -r '.auths | keys | .[]'); do sudo docker logout $url; done
           echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u $ --password-stdin
           cd /root/docker
@@ -226,32 +221,27 @@ jobs:
           done
           for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
           sudo mv -f /root/docker/cloud/* /root/docker
-          sudo rm -rf /root/docker/cloud
           sudo rm -rf /root/docker/main
+          sudo rm -rf /root/docker/cloud
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
           sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
           if [ ! -d "/root/data" ]; then
             sudo mkdir /root/data
           fi
-          if [ ! -d "/root/data/certbot" ]; then
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker container prune -f
-            sudo docker rmi $(sudo docker images -a -q)
-            sudo docker network prune -f
-            sudo kill -9 $(sudo lsof -t -i :443)
-            sudo systemctl stop docker
-            sudo systemctl start docker.service
-            cd /root/docker/kickstart
-            sudo docker compose up -d
-            sleep 60
-            sudo docker compose down
-          fi
-          sudo rm -rf /root/docker/kickstart
           sudo docker stop $(sudo docker ps -a -q)
           sudo docker container prune -f
           sudo docker network prune -f
           sudo kill -9 $(sudo lsof -t -i :443)
+          sudo kill -9 $(sudo lsof -t -i :80)
           sudo systemctl stop docker
           sudo systemctl start docker.service
+          if [ ! -d "/root/data/certbot" ]; then
+            cd /root/docker/kickstart
+            sudo docker compose up -d
+            sleep 60
+            sudo docker compose down
+            sudo docker stop $(sudo docker ps -a -q)
+            sudo docker container prune -f
+          fi
           cd /root/docker
           sudo docker compose up -d
