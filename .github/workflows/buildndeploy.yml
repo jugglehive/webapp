@@ -99,7 +99,7 @@ jobs:
           sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "POSTGRES_DATABASE" "POSTGRES_HOST" "POSTGRES_USER" "POSTGRES_PASSWORD" "DOMAIN" "IMG_NAME")
           for secret in "${secrets_array[@]}"; do
-            sudo sed -i "/^${secret}=/d" /etc/environment || true
+            sudo sed -i "/^${secret}=/d" /etc/environment 2>/dev/null || true
             case "${secret}" in
               "CERTBOT_EMAIL")
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
@@ -194,7 +194,7 @@ jobs:
           sudo touch /etc/environment
           secrets_array=("CERTBOT_EMAIL" "MYSQL_DATABASE" "MYSQL_HOST" "MYSQL_USER" "MYSQL_PASSWORD" "DOMAIN")
           for secret in "${secrets_array[@]}"; do
-            sudo sed -i "/^${secret}=/d" /etc/environment || true
+            sudo sed -i "/^${secret}=/d" /etc/environment 2>/dev/null || true
             case "${secret}" in
               "CERTBOT_EMAIL")
                 echo "CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}" | sudo tee -a /etc/environment
@@ -219,3 +219,29 @@ jobs:
                 ;;
             esac
           done
+          for env in $( cat /etc/environment ); do export $(echo $env | sed -e 's/"//g'); done
+          sudo mv -f /root/docker/cloud/* /root/docker
+          sudo rm -rf /root/docker/main
+          sudo rm -rf /root/docker/cloud
+          sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/nginx.conf
+          sed -i "s/\$DOMAIN/$DOMAIN/g" /root/docker/kickstart/web/nginx.conf
+          if [ ! -d "/root/data" ]; then
+            sudo mkdir /root/data
+          fi
+          sudo docker stop $(sudo docker ps -a -q)
+          sudo docker container prune -f
+          sudo docker network prune -f
+          sudo kill -9 $(sudo lsof -t -i :443)
+          sudo kill -9 $(sudo lsof -t -i :80)
+          sudo systemctl stop docker
+          sudo systemctl start docker.service
+          if [ ! -d "/root/data/certbot" ]; then
+            cd /root/docker/kickstart
+            sudo docker compose up -d
+            sleep 60
+            sudo docker compose down
+            sudo docker stop $(sudo docker ps -a -q)
+            sudo docker container prune -f
+          fi
+          cd /root/docker
+          sudo docker compose up -d
