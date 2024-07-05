@@ -17,6 +17,7 @@ This repository contains the source code for Juggle Hive's Website. It is struct
       - [File Structure](#file-structure-1)
       - [Source Directory](#source-directory-1)
     - [Database](#database)
+      - [Auth Schema](#auth-schema)
       - [TTRPG Schema](#ttrpg-schema)
 2. [License](#license)
 3. [Developers](#developers)
@@ -118,16 +119,26 @@ The project supports both MySQL and PostgreSQL databases, with SQL scripts provi
     - **ttrpg_mySQL.sql**: SQL script for setting up the MySQL database schema and tables.
     - **ttrpg_postgres.sql**: SQL script for setting up the PostgreSQL database schema and tables.
 
+#### Auth Schema
+
+The authentication schema is designed to manage user credentials and authentication details securely.
+
+##### Entity: `user`
+- **id** (integer, Primary Key): Unique identifier for the user.
+- **username** (character varying): Username of the user.
+- **password** (character varying): Password of the user.
+
 #### TTRPG Schema
 
-The database schema for the TTRPG system is composed of several entities, each representing a distinct aspect of the game. Below is a detailed explanation of every entity and its fields.
+The database schema for the TTRPG system is composed of several entities, each representing a distinct aspect of the game.
 
 ##### Entity: `allowed_item`
-- **class_id** (integer, Primary Key, Foreign Key to `class(id)`): Identifier for the class.
+- **id** (integer, Primary Key): Unique identifier for the allowed item.
+- **class_id** (integer, Foreign Key to `class(id)`): Identifier for the class.
 - **item_type** (character(255)): Type of item allowed for the class.
 
 ##### Entity: `base_stats`
-- **id** (integer, Primary Key): Unique identifier for the base stats record.
+- **id** (integer, Primary Key): Unique identifier for the base stats.
 - **vitality** (integer): Character's vitality.
 - **strength** (integer): Character's strength.
 - **dexterity** (integer): Character's dexterity.
@@ -143,35 +154,38 @@ The database schema for the TTRPG system is composed of several entities, each r
 - **name** (character varying(50)): Character's name.
 - **region_id** (integer, Foreign Key to `region(id)`): Identifier for the character's region.
 - **race_id** (integer, Foreign Key to `race(id)`): Identifier for the character's race.
-- **lvl_up_stat_id** (integer, Foreign Key to `base_stats(id)`): Identifier for the level-up stats of the character.
+- **gained_stats_id** (integer, Foreign Key to `base_stats(id)`): Identifier for the stats that the character gained progressing with the level-ups.
 
 ##### Entity: `character_classes`
-- **character_id** (integer, Primary Key, Foreign Key to `chara(id)`): Identifier for the character.
-- **class_id** (integer, Primary Key, Foreign Key to `class(id)`): Identifier for the class.
+- **id** (integer, Primary Key): Unique identifier for the character-class relation.
+- **character_id** (integer, Foreign Key to `chara(id)`): Identifier for the character.
+- **class_id** (integer, Foreign Key to `class(id)`): Identifier for the class.
 
 ##### Entity: `character_info`
 - **id** (integer, Primary Key): Unique identifier for the character information.
 - **lvl** (integer): Character's level.
 - **current_hp** (integer): Character's current hit points.
-- **shield** (integer): Character's shield points.
+- **shield** (integer): Character's temporary hit points (so called shield).
 - **max_hp** (integer): Character's maximum hit points.
 - **current_mp** (integer): Character's current magic points.
 - **current_ki** (integer): Character's current ki points.
 - **current_fury** (integer): Character's current fury points.
-- **current_miracles** (integer): Character's current miracles.
-- **current_metamorphs** (integer): Character's current metamorphs.
+- **current_miracles** (integer): Character's current miracle points.
+- **current_metamorphs** (integer): Character's current metamorph points.
 
 ##### Entity: `character_skills`
-- **character_id** (integer, Primary Key, Foreign Key to `chara(id)`): Identifier for the character.
+- **id** (integer, Primary Key): Unique identifier for the character-skill relation.
+- **character_id** (integer, Foreign Key to `chara(id)`): Identifier for the character.
 - **total_uses** (integer, default 0): Total uses of the skill.
 - **status** (integer): Status of the skill.
-- **unlocked_skill_id** (integer, Foreign Key to `skill(id)`): Identifier for the unlocked skill.
+- **skill_family_id** (integer, Foreign Key to `skill(id)`): Identifier for the skill family.
 - **temp_uses** (integer): Temporary uses of the skill.
 
 ##### Entity: `characters_tree_points`
-- **character_id** (integer, Primary Key, Foreign Key to `chara(id)`): Identifier for the character.
-- **tree_id** (integer, Primary Key, Foreign Key to `tree(id)`): Identifier for the tree.
-- **available_points** (integer): Available points in the tree.
+- **id** (integer, Primary Key): Unique identifier for the character-tree relation with the relative disposable skill points.
+- **character_id** (integer, Foreign Key to `chara(id)`): Identifier for the character.
+- **tree_id** (integer, Foreign Key to `tree(id)`): Identifier for the tree.
+- **available_points** (integer): Available points in the tree for that character.
 
 ##### Entity: `class`
 - **id** (integer, Primary Key): Unique identifier for the class.
@@ -181,10 +195,16 @@ The database schema for the TTRPG system is composed of several entities, each r
 - **stats_id** (integer, Foreign Key to `base_stats(id)`): Identifier for the base stats of the class.
 
 ##### Entity: `inventory`
-- **character_id** (integer, Primary Key, Foreign Key to `chara(id)`): Identifier for the character.
-- **item_id** (integer, Primary Key, Foreign Key to `item(id)`): Identifier for the item.
-- **equipped** (boolean, default false): Indicates if the item is equipped.
-- **stacks** (integer): Number of stacks of the item.
+- **id** (integer, Primary Key): Unique identifier for a character's item.
+- **character_id** (integer, Foreign Key to `chara(id)`): Identifier for the character.
+- **item_id** (integer, Foreign Key to `item(id)`): Identifier for the item.
+- **equipped** (boolean, default false): Indicates if the item is equipped by the character.
+- **stacks** (integer): Number of stacks of the item (if it's stackable).
+
+##### Entity: `inventory_item`
+- **id** (integer, Primary Key): Unique identifier for the inventory-item relation.
+- **inventory_id** (integer, Foreign Key to `inventory(id)`): Identifier for the inventory.
+- **item_id** (integer, Foreign Key to `item(id)`): Identifier for the item.
 
 ##### Entity: `item`
 - **id** (integer, Primary Key): Unique identifier for the item.
@@ -196,23 +216,27 @@ The database schema for the TTRPG system is composed of several entities, each r
 - **stackable** (boolean, default false): Indicates if the item is stackable.
 
 ##### Entity: `item_skill`
-- **item_id** (integer, Primary Key, Foreign Key to `item(id)`): Identifier for the item.
-- **skill_id** (integer, Primary Key, Foreign Key to `skill(id)`): Identifier for the skill.
+- **id** (integer, Primary Key): Unique identifier for the item-skill relation.
+- **item_id** (integer, Foreign Key to `item(id)`): Identifier for the item.
+- **skill_id** (integer, Foreign Key to `skill(id)`): Identifier for the skill.
 
 ##### Entity: `race`
 - **id** (integer, Primary Key): Unique identifier for the race.
 - **name** (character varying(50)): Name of the race.
 - **description** (character varying(150)): Description of the race.
 - **stat_id** (integer, Foreign Key to `base_stats(id)`): Identifier for the base stats of the race.
-- **level_up_hp** (integer, default 0): Hit points gained per level-up.
+- **hit_dice** (integer, default 0): Indicator of the dice used to determine the hit points gained each level up. The player can choose to use it's average too.
 
 ##### Entity: `race_region`
-- **race_id** (integer, Primary Key, Foreign Key to `race(id)`): Identifier for the race.
-- **region_id** (integer, Primary Key, Foreign Key to `region(id)`): Identifier for the region.
+- **id** (integer, Primary Key): Unique identifier for the race-region relation.
+- **race_id** (integer, Foreign Key to `race(id)`): Identifier for the race.
+- **region_id** (integer, Foreign Key to `region(id)`): Identifier for the region.
 
 ##### Entity: `race_skill`
-- **race_id** (integer, Primary Key, Foreign Key to `race(id)`): Identifier for the race.
-- **skill_tree_id** (integer, Primary Key, Foreign Key to `tree(id)`): Identifier for the skill tree.
+[//]: # (TODO: To check)
+- **id** (integer, Primary Key): Unique identifier for the race-skill relation.
+- **race_id** (integer, Foreign Key to `race(id)`): Identifier for the race.
+- **skill_tree_id** (integer, Foreign Key to `tree(id)`): Identifier for the skill tree.
 - **slot** (integer): Slot for the skill tree.
 
 ##### Entity: `region`
@@ -232,34 +256,37 @@ The database schema for the TTRPG system is composed of several entities, each r
 
 ##### Entity: `skill_family`
 - **id** (integer, Primary Key): Unique identifier for the skill family.
+- **name** (character varying(50)): Name of the skill family.
 
-##### Entity: `skill_modifier`
-- **id** (integer, Primary Key): Unique identifier for the skill modifier.
+##### Entity: `skill_effect`
+- **id** (integer, Primary Key): Unique identifier for the skill effect.
 - **skill_id** (integer, Foreign Key to `skill(id)`): Identifier for the skill.
-- **is_malus** (smallint, default 0): Indicates if the modifier is a penalty.
-- **is_area** (smallint, default 1): Indicates if the modifier affects an area.
-- **target_num** (integer, default 1): Number of targets affected by the modifier.
-- **target_type** (character(255)): Type of targets affected by the modifier.
-- **stat_target** (character(255)): Stat targeted by the modifier.
-- **stat_flat** (integer): Flat stat value affected by the modifier.
+- **is_malus** (smallint, default 0): Indicates if the effect is a penalty.
+- **is_area** (smallint, default 1): Indicates if the effect affects an area.
+- **target_num** (integer, default 1): Number of targets affected by the effect.
+- **target_type** (character(255)): Type of targets affected by the effect.
+- **stat_target** (character(255)): Stat targeted by the effect.
+- **stat_flat** (integer): Flat stat value affected by the effect.
 - **stat_scaling** (character(255)): Stat scaling type.
 - **stat_max_scaling** (integer): Maximum stat scaling value.
-- **stat_type** (character(255)): Type of stat affected by the modifier.
+- **stat_type** (character(255)): Type of stat affected by the effect.
 
-##### Entity: `skill_modifier_dices`
-- **skill_modifier_id** (integer, Primary Key, Foreign Key to `skill_modifier(id)`): Identifier for the skill modifier.
+##### Entity: `skill_effect_dices`
+- **id** (integer, Primary Key): Unique identifier for the skill effect's dices.
+- **skill_effect_id** (integer, Foreign Key to `skill_effect(id)`): Identifier for the skill effect.
 - **times** (integer, default 1): Number of times the dice is rolled.
 - **faces** (integer): Number of faces on the dice.
 
-##### Entity: `tree`
-- **id** (integer, Primary Key): Unique identifier for the tree.
-- **name** (character varying(50)): Name of the tree.
-- **description** (character varying(150)): Description of the tree.
+##### Entity: `tree_entity`
+- **id** (integer, Primary Key): Unique identifier for the skill tree.
+- **name** (character varying(50)): Name of the skill tree.
+- **description** (character varying(150)): Description of the skill tree.
 
 ##### Entity: `tree_skills`
-- **tree_id** (integer, Primary Key, Foreign Key to `tree(id)`): Identifier for the tree.
-- **skill_family_id** (integer, Primary Key, Foreign Key to `skill_family(id)`): Identifier for the skill family.
-- **parent_skill_family_id** (integer, nullable): Identifier for the parent skill family.
+- **id** (integer, Primary Key): Unique identifier for the skill tree-skill relation.
+- **tree_id** (integer, Foreign Key to `tree(id)`): Identifier for the skill tree.
+- **skill_family_id** (integer, Foreign Key to `skill_family(id)`): Identifier for the skill family.
+- **parent_skill_family_id** (integer, Foreign Key to `skill_family(id)`): Identifier for the parent skill family (the one that stands before this one in the tree).
 
 ## License
 
